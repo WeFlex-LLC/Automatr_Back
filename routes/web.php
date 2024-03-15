@@ -17,13 +17,12 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
+
 Route::get('/', function () {
     return redirect()->route('index');
 })->name('/');
 
-Route::prefix('stripe')->group(function () {
-    Route::any('webhook', [StripeWebhookController::class, 'handle']);
-});
+Route::any('stripe/webhook', [StripeWebhookController::class, 'handle']);
 
 //Language Change
 Route::get('lang/{locale}', function ($locale) {
