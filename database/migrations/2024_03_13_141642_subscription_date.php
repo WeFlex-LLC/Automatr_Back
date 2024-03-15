@@ -14,7 +14,7 @@ class SubscriptionDate extends Migration
     public function up()
     {
         Schema::table('package_users', function (Blueprint $table) {
-            $table->timestamp('subscription_date');
+            $table->timestamp('subscription_date')->nullable()->default(null);
         });
     }
 
