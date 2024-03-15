@@ -88,6 +88,7 @@ class OrderController extends Controller
           $user = new package_users;
           $user->user_id = $request->user()->id;
           $user->package_id = $packages[$request->package];
+          $user->customer_id = $customer->id;
         }
 
         $user->valid = 1;
