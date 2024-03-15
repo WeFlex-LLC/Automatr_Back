@@ -17,6 +17,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
+Route::any('stripe/webhook', [StripeWebhookController::class, 'handle']);
+
 Route::get('/', function () {
     return redirect()->route('index');
 })->name('/');
@@ -130,5 +132,3 @@ Route::group(['prefix' => 'admin',  'middleware' => 'auth'], function()
         Route::post('add',[PackageController::class,'addPackage'])->middleware('userType');
     });
 });
-
-Route::any('stripe/webhook', [StripeWebhookController::class, 'handle']);
