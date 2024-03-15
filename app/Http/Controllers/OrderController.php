@@ -82,9 +82,10 @@ class OrderController extends Controller
       $order->save();
 
       if($response['status'] == "active"){
-        if($user != null)
-          $stripe->subscriptions->cancel($user->subscription_id);
-        else {
+        if($user != null){
+          if($user->valid == 1)
+            $stripe->subscriptions->cancel($user->subscription_id);
+        }else {
           $user = new package_users;
           $user->user_id = $request->user()->id;
           $user->customer_id = $customer->id;
