@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\order as ModelsOrder;
 use Illuminate\Http\Request;
 use Stripe;
-use Stripe\Order;
+use Stripe\Customer;
 use Stripe\Stripe as StripeStripe;
 use Validator;
 use App\Models\package_users;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -30,8 +33,11 @@ class OrderController extends Controller
         return response()->json(['error' => $validator->errors()->all()], 200);
     }
 
-        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+      $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
+      $user = package_users::where('user_id','=',$request->user()->id)->first();
+
+      if($user == null){
         $customer =  $stripe->customers->create([
             'email' => $request->user()->email,
             'payment_method' => $request->paymentMethod,
@@ -46,37 +52,53 @@ class OrderController extends Controller
               ['price' => $request->priceId],
             ],
         ]);
+      }
+      else {
+        $response = $stripe->subscriptions->create([
+          'customer' => $user->customer_id,
+          'items' => [
+            ['price' => $request->priceId],
+          ],
+        ]);
+      }
 
-        $packages = ["ENTERPRISE" => 3, "BUSINESS" => 2, "PRO" => 1 ];
-        $order = new ModelsOrder;
+      $packages = ["ENTERPRISE" => 3, "BUSINESS" => 2, "PRO" => 1 ];
 
-        $order->user_id = $request->user()->id;
-        $order->name = $request->nameoncard;
-        $order->country = $request->country;
-        if(isset($request->street_address)){ $order->street = $request->street_address;}
-        if(isset($request->city)){ $order->city = $request->city;}
-        if(isset($request->zip)){ $order->zip = $request->zip;}
-        if(isset($request->promocode)){ $order->promocode = $request->promocode;}
-        $order->status = $response['status'];
-        $order->paymentMethod = $request->paymentMethod;
-        $order->priceId = $request->priceId;
-        $order->package_id = $packages[$request->package];
-        $order->packageType = $request->packageType;
+      $order = new ModelsOrder;
 
-        $order->save();
-        if($response['status'] == "active"){
-          $pu = new package_users;
+      $order->user_id = $request->user()->id;
+      $order->name = $request->nameoncard;
+      $order->country = $request->country;
+      if(isset($request->street_address)){ $order->street = $request->street_address;}
+      if(isset($request->city)){ $order->city = $request->city;}
+      if(isset($request->zip)){ $order->zip = $request->zip;}
+      if(isset($request->promocode)){ $order->promocode = $request->promocode;}
+      $order->status = $response['status'];
+      $order->paymentMethod = $request->paymentMethod;
+      $order->priceId = $request->priceId;
+      $order->package_id = $packages[$request->package];
+      $order->packageType = $request->packageType;
 
-          $pu->user_id = $request->user()->id;
-          $pu->package_id = $packages[$request->package];
-          $pu->valid = 1;
-          $pu->usedTime = 0;
-          $pu->usedAutom = 0;
+      $order->save();
 
-          $pu->save();
+      if($response['status'] == "active"){
+        if($user != null)
+          $stripe->subscriptions->cancel($user->subscription_id);
+        else {
+          $user = new package_users;
+          $user->user_id = $request->user()->id;
+          $user->package_id = $packages[$request->package];
         }
-        
 
-        return response()->json($response,200);
+        $user->valid = 1;
+        $user->usedTime = 0;
+        $user->usedAutom = 0;
+        $user->subscription_date = Carbon::now();
+        $user->subscription_id = $response->id;
+
+        $user->save();
+      }
+
+      return response()->json($response,200);
     }
 }

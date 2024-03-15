@@ -895,6 +895,18 @@ class AutomationController extends Controller
     }
 
     public function getFullTabData (Request $request) {
+        $package_users = package_users::where('user_id', '=', $request->user()->id)->first();
+        $package = package::where('id', '=', $package_users->package_id)->first();
+
+        if($package_users->valid != 1)
+        return response()->json(['error' => 'NotValid']);
+
+        if($package_users->usedTime > $package->timeLimit)
+            return response()->json(['error' => 'Time']);
+        
+        if($package_users->usedAutom > $package->autoLimit)
+            return response()->json(['error' => 'Count']);
+
         return $this->runAutom($request);
     }
 

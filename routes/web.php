@@ -10,6 +10,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageUsersController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TypeController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
@@ -129,3 +130,5 @@ Route::group(['prefix' => 'admin',  'middleware' => 'auth'], function()
         Route::post('add',[PackageController::class,'addPackage'])->middleware('userType');
     });
 });
+
+Route::any('stripe/webhook', [StripeWebhookController::class, 'handle']);

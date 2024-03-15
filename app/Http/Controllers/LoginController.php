@@ -163,13 +163,13 @@ class LoginController extends Controller
         $input['password'] = bcrypt($input['password']);
         $input['type'] = 1;
         $user = User::create($input);
-        event(new Registered($user));
+        event(new Registered($user)); // not working
         $success = $user;
         $success['token'] =  $user->createToken('MyApp',['user'])->accessToken;
-        $user->sendEmailVerificationNotification();
+        $user->sendEmailVerificationNotification();  // not working
    
         return response()->json($success, 200);
-        //return response()->json(['error' => ['Email and Password are Wrong.']], 200);
+        // return response()->json(['error' => ['Email and Password are Wrong.']], 200);
     }
 
     public function userRegisterStep2 (Request $request){

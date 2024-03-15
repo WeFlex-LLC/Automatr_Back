@@ -69,6 +69,7 @@ Route::post('autos/mapExtract', [AutomationController::class, 'mapExtract'])->na
 Route::post('autos/extractData', [AutomationController::class, 'automExtraction'])->name('automExtraction');
 Route::post('autos/action', [AutomationController::class, 'automAction'])->name('automAction');
 
+
 Route::post('email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
 

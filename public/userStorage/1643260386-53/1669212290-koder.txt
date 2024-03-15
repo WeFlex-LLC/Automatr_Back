@@ -1,0 +1,4 @@
+console.log("\u{1F600}") === Smile
+&times; === X(close icon)
+&uarr; === (slaq verev)
+&darr; === (slaq nerqev)
