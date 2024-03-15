@@ -87,7 +87,6 @@ class OrderController extends Controller
         else {
           $user = new package_users;
           $user->user_id = $request->user()->id;
-          $user->package_id = $packages[$request->package];
           $user->customer_id = $customer->id;
         }
 
@@ -96,6 +95,7 @@ class OrderController extends Controller
         $user->usedAutom = 0;
         $user->subscription_date = Carbon::now();
         $user->subscription_id = $response->id;
+        $user->package_id = $packages[$request->package];
 
         $user->save();
       }
