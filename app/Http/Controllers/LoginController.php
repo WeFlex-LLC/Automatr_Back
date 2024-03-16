@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Admin;
 use Hash;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Auth;
 use Session;
 use Mail;

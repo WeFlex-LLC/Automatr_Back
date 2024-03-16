@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Stripe;
 use Stripe\Customer;
 use Stripe\Stripe as StripeStripe;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use App\Models\package_users;
 use App\Models\User;
 use Carbon\Carbon;
@@ -35,9 +35,9 @@ class OrderController extends Controller
 
       $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
-      $user = package_users::where('user_id','=',$request->user()->id)->first();
+      $pu = package_users::where('user_id','=',$request->user()->id)->first();
 
-      if($user == null){
+      if($pu == null){
         $customer =  $stripe->customers->create([
             'email' => $request->user()->email,
             'payment_method' => $request->paymentMethod,
@@ -55,7 +55,7 @@ class OrderController extends Controller
       }
       else {
         $response = $stripe->subscriptions->create([
-          'customer' => $user->customer_id,
+          'customer' => $pu->customer_id,
           'items' => [
             ['price' => $request->priceId],
           ],
@@ -82,23 +82,22 @@ class OrderController extends Controller
       $order->save();
 
       if($response['status'] == "active"){
-        if($user != null){
-          if($user->valid == 1)
-            $stripe->subscriptions->cancel($user->subscription_id);
-        }else {
-          $user = new package_users;
-          $user->user_id = $request->user()->id;
-          $user->customer_id = $customer->id;
+        if($pu == null) {
+          $pu = new package_users;
+          $pu->user_id = $request->user()->id;
+          $pu->customer_id = $customer->id;
+        }else if($pu->valid == 1){
+          $stripe->subscriptions->cancel($pu->subscription_id);
         }
 
-        $user->valid = 1;
-        $user->usedTime = 0;
-        $user->usedAutom = 0;
-        $user->subscription_date = Carbon::now();
-        $user->subscription_id = $response->id;
-        $user->package_id = $packages[$request->package];
+        $pu->valid = 1;
+        $pu->usedTime = 0;
+        $pu->usedAutom = 0;
+        $pu->subscription_date = Carbon::now();
+        $pu->subscription_id = $response->id;
+        $pu->package_id = $packages[$request->package];
 
-        $user->save();
+        $pu->save();
       }
 
       return response()->json($response,200);

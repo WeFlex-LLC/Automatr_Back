@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\subsribtion;
 use Illuminate\Http\Request;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 
 class SubsribtionController extends Controller
 {
